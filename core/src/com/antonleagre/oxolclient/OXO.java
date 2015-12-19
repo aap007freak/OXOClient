@@ -15,6 +15,8 @@ import io.socket.emitter.Emitter;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+
 public class OXO extends ApplicationAdapter {
 	SpriteBatch batch;
 	private Socket socket;
@@ -22,6 +24,7 @@ public class OXO extends ApplicationAdapter {
 	Starship player;
 	Texture shipTexture;
 	Texture oShipTexture;
+    HashMap<String, Starship> friendlyPlayers;
 
 	
 	@Override
@@ -29,6 +32,7 @@ public class OXO extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		oShipTexture = new Texture("playerShip2.png");
 		shipTexture = new Texture("playerShip.png");
+        friendlyPlayers = new HashMap<String, Starship>();
 		connectSocket();
 		configSocketEvents();
 
@@ -58,8 +62,11 @@ public class OXO extends ApplicationAdapter {
 		if(player != null){
 			player.draw(batch);
 		}
-		batch.end();
-	}
+        for(HashMap.Entry<String,Starship> entry : friendlyPlayers.entrySet()) {
+            entry.getValue().draw(batch);
+        }
+        batch.end();
+    }
 
 	@Override
 	public void dispose() {
@@ -102,6 +109,7 @@ public class OXO extends ApplicationAdapter {
                     JSONObject data = (JSONObject) args[0];
                     id = data.getString("id");
                     Gdx.app.log("SOCKET.IO", "Player connected with id: " + id);
+                    friendlyPlayers.put(id, new Starship(oShipTexture));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
