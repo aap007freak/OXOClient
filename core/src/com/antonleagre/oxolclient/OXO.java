@@ -8,10 +8,11 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import com.sun.javafx.property.adapter.PropertyDescriptor;
+import com.badlogic.gdx.math.Vector2;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,6 +30,7 @@ public class OXO extends ApplicationAdapter {
 	
 	@Override
 	public void create () {
+		Gdx.app.log("LIBGDX", "Game started");
 		batch = new SpriteBatch();
 		oShipTexture = new Texture("playerShip2.png");
 		shipTexture = new Texture("playerShip.png");
@@ -114,6 +116,36 @@ public class OXO extends ApplicationAdapter {
                     e.printStackTrace();
                 }
             }
-        });
+        }).on("playerDisconnected", new Emitter.Listener() {
+			@Override
+			public void call(Object... args) {
+				try {
+					JSONObject data = (JSONObject) args[0];
+					id = data.getString("id");
+					Gdx.app.log("SOCKET.IO", "Player disconnected with id: " + id);
+					friendlyPlayers.remove(id);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}).on("getPlayers", new Emitter.Listener() {
+			@Override
+			public void call(Object... args) {
+				JSONArray objs = (JSONArray) args[0];
+				try {
+					for(int i = 0; i < objs.length(); i++){
+						Starship ship = new Starship(oShipTexture);
+						Vector2 pos = new Vector2();
+						pos.x = ((Double) objs.getJSONObject(i).getDouble("x")).floatValue();
+						pos.y = ((Double) objs.getJSONObject(i).getDouble("y")).floatValue();
+						ship.setPosition(pos.x,pos.y);
+						friendlyPlayers.put(objs.getJSONObject(i).getString("id"), ship);
+					}
+				}catch (JSONException e){
+					// TODO: 20/12/2015  
+				}
+			}
+		});
 	}
 }
+
