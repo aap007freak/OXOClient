@@ -15,10 +15,19 @@ import io.socket.emitter.Emitter;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
+/**
+ * This game was purely made to learn about the socket.io Libgdx integration,
+ * code maybe sloppy, or wrong. Made after a tutorial by Brent Aureli.
+  */
 public class OXO extends ApplicationAdapter {
+	//for our starship sprites
 	SpriteBatch batch;
+	//the conn to the serveer (starts at instantiating)
 	private Socket socket;
+	//our unique player id
 	String id;
+	//our player
 	Starship player;
 	Texture shipTexture;
 	Texture oShipTexture;
@@ -35,15 +44,22 @@ public class OXO extends ApplicationAdapter {
 	}
 	@Override
 	public void resize(int width, int height){
+		//shouldn't be needing this, size is fixed
+		// TODO: deprecated maybe?
 		super.resize(width,height);
 	}
+	//we want to run this BEFORE update AND RENDER.
 	public void handleInput(float dt){
+		//we do this cause it will only initialize the player
+		//after we connect to the server.  
 		if(player != null){
 			if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
+				// times delta cause lag compenstation
 				player.setPosition(player.getX() + (-200 * dt), player.getY());
 			}
+			//same as above
 			else if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-				player.setPosition(player.getX() + (200 * dt), player.getY());
+				player.setPosition(player.getX() + (100 * dt), player.getY());
 			}
 		}
 	}
@@ -53,6 +69,8 @@ public class OXO extends ApplicationAdapter {
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		handleInput(Gdx.graphics.getDeltaTime());
+		//grav ide
+	
 
 		batch.begin();
 		if(player != null){
