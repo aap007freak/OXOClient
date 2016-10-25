@@ -21,7 +21,7 @@ import org.json.JSONObject;
  * code maybe sloppy, or wrong. Made after a tutorial by Brent Aureli.
   */
 public class OXO extends ApplicationAdapter {
-	//for our starship sprites
+	//batch to contain our to render sprites
 	SpriteBatch batch;
 	//the conn to the serveer (starts at instantiating)
 	private Socket socket;
@@ -48,8 +48,9 @@ public class OXO extends ApplicationAdapter {
 		// TODO: deprecated maybe?
 		super.resize(width,height);
 	}
-	//we want to run this BEFORE update AND RENDER.
+	//we want to run this IN update before RENDER.
 	public void handleInput(float dt){
+		//only handle the input if we the player connected to the server,
 		//we do this cause it will only initialize the player
 		//after we connect to the server.  
 		if(player != null){
@@ -69,7 +70,6 @@ public class OXO extends ApplicationAdapter {
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		handleInput(Gdx.graphics.getDeltaTime());
-		//grav ide
 	
 
 		batch.begin();
@@ -87,18 +87,27 @@ public class OXO extends ApplicationAdapter {
 	}
 	private void connectSocket(){
 		try{
+			//try the cloud9 host, using localhost for testing of the node.js servers.
 			socket = IO.socket("http://localhost:8080");
 			socket.connect();
 		}catch (Exception e){
 			// TODO: 19/12/2015
+			Gdx.app.exit();
 		}
 
 	}
+	/*
+		Call this method once before we connect to the remote host!
+	*/
 	private void configSocketEvents(){
+		//add a listener on the CONNECT event.
 		socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
 			@Override
+			//what the listener has to do once it calls
 			public void call(Object... args) {
 				Gdx.app.log("SOCKET.IO", "Connected to the server");
+				//we instantiate the player once we connect to the server, when it will also
+				//be able to connect with other clients.
 				player = new Starship(shipTexture);
 			}
 		}).on("getID", new Emitter.Listener() {
